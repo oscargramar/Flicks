@@ -35,7 +35,7 @@ Please list two areas of the assignment you'd like to **discuss further with you
 Here's a walkthrough of implemented user stories:
 
 <img src='http://i.imgur.com/KT5W9Tr.gif' title='Offline Error' width='' alt='Video Walkthrough' />
-<img src='http://i.imgur.com/7SfIPQJ.gifv' title=' Online' width='' alt='Video Walkthrough' />
+<img src='http://i.imgur.com/7SfIPQJ.gif' title=' Online' width='' alt='Video Walkthrough' />
 
 
 GIF created with [gyazo]
