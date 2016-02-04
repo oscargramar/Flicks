@@ -15,13 +15,12 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     @IBOutlet weak var errorView: UIView!
     var movies: [NSDictionary]?
     var apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-    
-    
     var session = NSURLSession(
         configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
         delegate: nil,
         delegateQueue: NSOperationQueue.mainQueue()
     )
+    var endpoint: String!
     
     
     
@@ -60,6 +59,9 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell",forIndexPath: indexPath) as! MovieCell
+        cell.selectionStyle = UITableViewCellSelectionStyle.Gray
+        
+        
         let movie = movies![indexPath.row]
         let title = movie["title"] as! String
         cell.titleLabel.text = title
@@ -82,7 +84,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     
     
     func loadInitialData(){
-        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string: "https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         
@@ -150,6 +152,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         let cell = sender as! UITableViewCell
         let indexPath = tableView.indexPathForCell(cell)
+        tableView.deselectRowAtIndexPath(indexPath!, animated: false)
         let movie = movies![indexPath!.row]
         let detailVC = segue.destinationViewController as! DetailViewController
         detailVC.movie = movie
