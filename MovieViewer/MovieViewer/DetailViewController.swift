@@ -25,8 +25,21 @@ class DetailViewController: UIViewController {
         
         
         
+        
         let title = movie["title"] as? String
         titleLabel.text = title
+        
+        let detailsTitle = UILabel()
+        let titleText = NSAttributedString(string: "Details", attributes: [
+            NSFontAttributeName : UIFont.boldSystemFontOfSize(22),
+            NSForegroundColorAttributeName : UIColor(red: 0.5, green: 0.25, blue: 0.15, alpha: 0.8),
+            ])
+        
+        detailsTitle.attributedText = titleText
+        detailsTitle.sizeToFit()
+        navigationItem.titleView = detailsTitle
+        
+
         
         let overview = movie["overview"] as? String
         

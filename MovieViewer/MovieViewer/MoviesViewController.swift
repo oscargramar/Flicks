@@ -10,7 +10,7 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
+class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDelegate,UISearchResultsUpdating {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var errorView: UIView!
     var movies: [NSDictionary]?
@@ -21,6 +21,9 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
         delegateQueue: NSOperationQueue.mainQueue()
     )
     var endpoint: String!
+    var searchController: UISearchController!
+    var filteredData: [NSDictionary]?
+
     
     
     
@@ -29,6 +32,31 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
+        searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.searchBar.sizeToFit()
+        tableView.tableHeaderView = searchController.searchBar
+        definesPresentationContext = true
+        
+        
+        var title = ""
+        if(endpoint == "now_playing"){
+            title = "Now Playing"
+        }
+        else{
+            title = "Top Rated"
+        }
+        
+        self.navigationItem.title = "\(title)"
+        if let navigationBar = navigationController?.navigationBar {
+            navigationBar.tintColor = UIColor(red: 1.0, green: 0.25, blue: 0.25, alpha: 0.8)
+            navigationBar.titleTextAttributes = [
+                NSFontAttributeName : UIFont.boldSystemFontOfSize(22),
+                NSForegroundColorAttributeName : UIColor(red: 0.5, green: 0.15, blue: 0.15, alpha: 0.8),
+            ]
+        }
+        
         
         
         let refreshControl = UIRefreshControl()
@@ -50,7 +78,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        if let movies = movies{
+        if let movies = filteredData{
             return movies.count
         }else{
             return 0
@@ -62,7 +90,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
         cell.selectionStyle = UITableViewCellSelectionStyle.Gray
         
         
-        let movie = movies![indexPath.row]
+        let movie = self.filteredData![indexPath.row]
         let title = movie["title"] as! String
         cell.titleLabel.text = title
         
@@ -95,6 +123,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
                             self.movies = responseDictionary["results"] as? [NSDictionary]
+                            self.filteredData = responseDictionary["results"] as? [NSDictionary]
                             MBProgressHUD.hideHUDForView(self.view, animated: true)
                             self.tableView.reloadData()
                             self.errorView.hidden = true
@@ -114,7 +143,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     
     
     func refreshControlAction(refreshControl: UIRefreshControl){
-        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string: "https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -130,6 +159,7 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
                             self.movies = responseDictionary["results"] as? [NSDictionary]
+                            self.filteredData = responseDictionary["results"] as? [NSDictionary]
                             MBProgressHUD.hideHUDForView(self.view, animated: true)
                             self.errorView.hidden = true
                             self.tableView.reloadData()
@@ -147,6 +177,15 @@ class MoviesViewController: UIViewController,UITableViewDataSource,UITableViewDe
     }
 
     
+    func updateSearchResultsForSearchController(searchController: UISearchController) {
+        if let searchText = searchController.searchBar.text{
+            self.filteredData = searchText.isEmpty ? self.movies! : self.movies!.filter({
+                ($0["title"]! as! String).rangeOfString(searchText,options: .CaseInsensitiveSearch) != nil
+            })
+            tableView.reloadData()
+        }
+       
+    }
     
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
